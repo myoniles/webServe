@@ -5,8 +5,10 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <netdb.h>
+#include <dirent.h>
 
 #define PORT 8080
+#define ROOT "root"
 
 /*
 	If by chance you are Thomas, looking for a
@@ -21,7 +23,7 @@ void errormsg( char* msg, int status, int critical ) {
 	}
 }
 
-void handle(int sockid, FILE* root) {
+void handle(int sockid, DIR* root) {
 	int maxRequestLength = 512;
 	char buff[maxRequestLength + 1];
 	int currLength = 0;
@@ -38,6 +40,9 @@ void handle(int sockid, FILE* root) {
 		prevChar = currChar;
 	}
 	buff[--currLength] = 0;
+
+	printf("%s\n", buff);
+	close(sockid);
 }
 
 int main (){
@@ -46,6 +51,7 @@ int main (){
 	int addrlen = sizeof(address);
 	int sockid;
 	int status;
+	DIR* dir = opendir( ROOT );
 
 	// Create the socket
  	if ( (sockid = socket(PF_INET, SOCK_STREAM,0))  == 0) {
@@ -77,6 +83,8 @@ int main (){
 	if ( (newSoc=accept(sockid, (struct sockaddr*)&address,(socklen_t*)&addrlen )) < 0) {
 		errormsg("I object!", status, 0);
 	}
+
+	handle( newSoc, dir);
 
 	status = close(sockid);
 
