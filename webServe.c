@@ -44,33 +44,33 @@ char* getDate(){
 }
 
 void sendHeader(int sockid, char* status, char* contentType){
-	write(sockid, PROT, strlen(PROT));
-	wsockid("");
+	wsockid(PROT);
+	wsockid(" ");
 	//write(sockid, " ", 1);
-	write(sockid, status, strlen(status));
-	write(sockid, "\r\n", 2);
-	write(sockid, "Server: MikeServe/0.1.0\r\n", 25);
-	write(sockid, "Date: ", 6);
+	wsockid(status);
+	wsockid("\r\n");
+	wsockid("Server: MikeServe/0.1.0\r\n");
+	wsockid("Date: ");
 	char* date = getDate();
-	write(sockid, date, strlen(date));
-	write(sockid, "\r\n", 2);
-	write(sockid, "Content-Language: en_US\r\n", 25);
-	write(sockid, "Content-Type: ", 14);
-	write(sockid, contentType, strlen(contentType));
-	write(sockid, "\r\n", 2);
-	write(sockid, "Connection: close\r\n\r\n\r\n", 23);
+	wsockid(date);
+	wsockid("\r\n");
+	wsockid("Content-Language: en_US\r\n");
+	wsockid("Content-Type: ");
+	wsockid(contentType);
+	wsockid("\r\n");
+	wsockid("Connection: close\r\n\r\n\r\n");
 	free(date);
 	return;
 }
 
 void genErrorPage(int sockid, char* error){
-	write(sockid, "<html>\r\n<head>\r\n<title>", 23);
-	write(sockid, error, strlen(error));
-	if (write(sockid, "</title>\r\n</head>\r\n<body>\r\n<h1>\r\n", 33) != 33){ return;}
-	write(sockid, error, strlen(error));
-	write(sockid, "</h1>\r\n<hr>\r\n<p>MikeServe version ", 34);
-	write(sockid,  VERSION, strlen( VERSION ));
-	write(sockid, "</p>\r\n</body></html>\r\n", 22);
+	wsockid("<html>\r\n<head>\r\n<title>");
+	wsockid(error);
+	wsockid("</title>\r\n</head>\r\n<body>\r\n<h1>\r\n");
+	wsockid(error);
+	wsockid("</h1>\r\n<hr>\r\n<p>MikeServe version ");
+	wsockid(VERSION);
+	wsockid("</p>\r\n</body></html>\r\n");
 }
 
 void sigintHandler(int sig_num) {
