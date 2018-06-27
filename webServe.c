@@ -46,7 +46,6 @@ char* getDate(){
 void sendHeader(int sockid, char* status, char* contentType){
 	wsockid(PROT);
 	wsockid(" ");
-	//write(sockid, " ", 1);
 	wsockid(status);
 	wsockid("\r\n");
 	wsockid("Server: MikeServe/0.1.0\r\n");
@@ -112,8 +111,7 @@ void handle(int sockid) {
 		sendHeader(sockid, "400 Bad Request", "text/html" );
 		genErrorPage (sockid, "400 Bad Request");
 	}
-
-	close(sockid);
+	shutdown(sockid, 2);
 }
 
 int main (){
@@ -124,12 +122,10 @@ int main (){
 	int status;
 
 	// Set up the sigint handler as to ensure the socket is closed
-
 	signal(SIGINT, sigintHandler);
 
-
 	// Create the socket
- 	if ( (sockid = socket(PF_INET, SOCK_STREAM,0))  == 0) {
+ 	if ( (sockid = socket(AF_INET, SOCK_STREAM,0))  == 0) {
 		errormsg("Socket failure", sockid, 1);
 		int status = close(sockid);
 	}
