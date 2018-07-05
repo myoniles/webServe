@@ -16,7 +16,7 @@
 #define PROT "HTTP/1.0"
 #define VERSION "0.1.0"
 
-#define wsockid(str) if (write(sockid, str, strlen(str)) != strlen(str)) exit(1);
+#define wsockid(str) if (send(sockid, str, strlen(str), 0) != strlen(str)) exit(1);
 
 /*
 	If by chance you are Thomas, looking for a
@@ -80,6 +80,21 @@ void sigintHandler(int sig_num) {
 	exit(1);
 }
 
+int fileDump (int sockid, char* filename){
+	FILE* fille = fopen(filename,"r");
+	if (fille == NULL){
+		return 1;
+	}
+
+	char *c;
+	while ((*c=fgetc(fille)) != EOF) {
+		wsockid(c);
+	}
+
+	fclose(fille);
+	return 0;
+}
+
 void handle(int sockid) {
 	int maxRequestLength = 2048;
 	char buff[maxRequestLength + 1];
@@ -88,7 +103,7 @@ void handle(int sockid) {
 	char prevChar = 0;
 
 	// Get the request Store it in buff
-	while (currLength < maxRequestLength && read (sockid, &currChar, 1) > 0){
+	while (currLength < maxRequestLength && recv (sockid, &currChar, 1,0) > 0){
 		if (currChar == '\r' && prevChar == '\n') {
 			// Finish The message
 			buff[currLength] = '\r';
@@ -104,13 +119,17 @@ void handle(int sockid) {
 	int method;
 
 	// A wise man once said "We only support GET"
-	if (strncmp(buff, "HECK", 3) == 0){
+	if (strncmp(buff, "GET", 3) == 0){
 		method = 1;
 	} else {
 		// The request looks weird aka its not a get request
 		sendHeader(sockid, "400 Bad Request", "text/html" );
 		genErrorPage (sockid, "400 Bad Request");
 	}
+
+	sendHeader(sockid, "200 OK", "text/html");
+	fileDump(sockid, "./root/index.html");
+
 	shutdown(sockid, 2);
 }
 
@@ -144,7 +163,6 @@ int main (){
 		int status = close(sockid);
 	}
 
-
 	while ( 1 ){
 		// Listen to on PORT
 		if ((status=listen(sockid, 3) < 0 )){
@@ -160,8 +178,5 @@ int main (){
 		handle( newSoc ); 
 
 	}
-
 	status = close(sockid);
-
-
 }
