@@ -44,6 +44,8 @@ char* getDate(){
 }
 
 void sendHeader(int sockid, char* status, char* contentType){
+	// hard coding is like sausage; its a grind and you might
+	// not want to have any if you knew how it was made.
 	wsockid(PROT);
 	wsockid(" ");
 	wsockid(status);
@@ -58,11 +60,35 @@ void sendHeader(int sockid, char* status, char* contentType){
 	wsockid(contentType);
 	wsockid("\r\n");
 	wsockid("Connection: close\r\n\r\n\r\n");
+	// Opposite of "Save the Date" letters"
 	free(date);
 	return;
 }
 
+char* getRequestedFileName(char* full){
+	int numChars = 0;
+	char* needle = strchr(full,'/')+1;
+
+	while (*needle != ' ' && *needle != '\r'){
+		needle++;
+		numChars++;
+	}
+
+	// requesting the landing page
+	if ( numChars == 0){
+		return strdup("./root/index.html");
+	} else {
+		// 1 is added to offset the '/'
+		needle = (char*) malloc(numChars + 6);
+		strcpy(needle, "./root");
+		strncat(needle, strchr(full, '/'), numChars +1 );
+		//return strndup(strchr(full,'/')+1, numChars-1);
+		return needle;
+	}
+}
+
 void genErrorPage(int sockid, char* error){
+	// See comment in SendHeader()
 	wsockid("<html>\r\n<head>\r\n<title>");
 	wsockid(error);
 	wsockid("</title>\r\n</head>\r\n<body>\r\n<h1>\r\n");
@@ -86,9 +112,11 @@ int fileDump (int sockid, char* filename){
 		return 1;
 	}
 
-	char *c;
-	while ((*c=fgetc(fille)) != EOF) {
-		wsockid(c);
+	char c;
+	// This does not use the macro wsockid because 
+	// strlen behaves strangely with single chars
+	while ( (c=fgetc(fille)) != EOF) {	
+		send(sockid, &c, 1, 0);
 	}
 
 	fclose(fille);
@@ -103,7 +131,7 @@ void handle(int sockid) {
 	char prevChar = 0;
 
 	// Get the request Store it in buff
-	while (currLength < maxRequestLength && recv (sockid, &currChar, 1,0) > 0){
+	while (currLength < maxRequestLength && recv(sockid, &currChar, 1,0) > 0){
 		if (currChar == '\r' && prevChar == '\n') {
 			// Finish The message
 			buff[currLength] = '\r';
@@ -128,8 +156,11 @@ void handle(int sockid) {
 	}
 
 	sendHeader(sockid, "200 OK", "text/html");
-	fileDump(sockid, "./root/index.html");
+	char* requestPath = getRequestedFileName(buff);
+	fileDump(sockid, requestPath);
 
+
+	free(requestPath);
 	shutdown(sockid, 2);
 }
 
