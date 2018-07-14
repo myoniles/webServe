@@ -59,25 +59,33 @@ void handle(int sockid) {
 		prevChar = currChar;
 	}
 
-	// TODO Process request
-	int method;
-
-	// A wise man once said "We only support GET"
-	if (strncmp(buff, "GET", 3) == 0){
-		method = 1;
-	} else {
-		// The request looks weird aka its not a get request
-		sendHeader(sockid, "400 Bad Request", "text/html" );
-		genErrorPage (sockid, "400 Bad Request");
+	if (currLength >= maxRequestLength){
+		sendHeader(sockid, "413 Payload Too Large", "text/html");
+		genErrorPage(sockid, "413 Payload Too Large");
+		return;
 	}
 
-	sendHeader(sockid, "200 OK", "text/html");
+	// TODO Process request
+	// A wise man once said "We only support GET"
+	if (!strncmp(buff, "GET", 3) == 0){
+		// The request looks weird aka its not a get request
+		sendHeader(sockid, "405 Method Not Allowed", "text/html" );
+		genErrorPage (sockid, "405 Method Not Allowed");
+		return;
+	}
+
+	// Check if the file exists
 	char* requestPath = getRequestedFileName(buff);
-	fileDump(sockid, requestPath);
-
-
+	if ( access(requestPath, F_OK) != -1) {
+		// If it does return the thing
+		sendHeader(sockid, "200 OK", "text/html");
+		fileDump(sockid, requestPath);
+	} else {
+		// If not, don't do the thing
+		sendHeader(sockid, "404 Not Found", "text/html");
+		genErrorPage(sockid, "404 Page Not Found");
+	}
 	free(requestPath);
-	shutdown(sockid, 2);
 }
 
 int main (){
@@ -123,7 +131,7 @@ int main (){
 		}
 
 		handle( newSoc ); 
-
+		shutdown(newSoc, 2);
 	}
 	status = close(sockid);
 }
