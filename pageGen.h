@@ -10,8 +10,9 @@
 #include <netdb.h>
 #include <dirent.h>
 #include <string.h>
-#include <signal.h>
 #include <time.h>
+
+#include "log.h"
 
 #define PORT 8080
 #define ROOT "root"
@@ -19,17 +20,6 @@
 #define VERSION "0.1.0"
 
 #define wsockid(str) if (send(sockid, str, strlen(str), 0) != strlen(str)) exit(1);
-
-char* getDate(){
-	time_t rawtime;
-	struct tm* timeinfo;
-	char* buff = (char*)calloc(50, sizeof(char));
-
-	time (&rawtime);
-	timeinfo = localtime ( &rawtime );
-	strftime(buff, 50, "%a, %d %b %Y %H:%M:%S %Z", timeinfo);
-	return buff;
-}
 
 void sendHeader(int sockid, char* status, char* contentType){
 	// hard coding is like sausage; its a grind and you might
@@ -62,6 +52,9 @@ void genErrorPage(int sockid, char* error){
 	wsockid("</h1>\r\n<hr>\r\n<p>MikeServe version ");
 	wsockid(VERSION);
 	wsockid("</p>\r\n</body></html>\r\n");
+
+	logError(error);
+	return;
 }
 
 int fileDump (int sockid, char* filename){
