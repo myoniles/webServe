@@ -12,11 +12,13 @@
 #include <time.h>
 
 #include "pageGen.h"
+#include "log.h"
 
 #define PORT 8080
 #define ROOT "root"
 #define PROT "HTTP/1.0"
 #define VERSION "0.1.0"
+#define LOGFILE "mikeServe.log"
 
 /*
 	If by chance you are Thomas, looking for a
@@ -24,13 +26,6 @@
 
 	This program was written in vim not emacs.
 */
-
-void errormsg( char* msg, int status, int critical ) {
-	fprintf(stderr, "%s\nStatus: %d\n", msg, status);
-	if (critical){
-		exit(EXIT_FAILURE);
-	}
-}
 
 void sigintHandler(int sig_num) {
 	signal(SIGINT, sigintHandler);
@@ -85,6 +80,7 @@ void handle(int sockid) {
 	// Check if the file exists
 	// TODO: Add Error 418
 	char* requestPath = getRequestedFileName(buff);
+	logRequest(requestPath);
 	if (requestPath == NULL) {
 		// Malformed request
 		sendHeader(sockid, "400 Bad Request", "text/html");
