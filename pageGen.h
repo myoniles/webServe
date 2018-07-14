@@ -83,7 +83,13 @@ int fileDump (int sockid, char* filename){
 
 char* getRequestedFileName(char* full){
 	int numChars = 0;
-	char* needle = strchr(full,'/')+1;
+	char* needle = strchr(full,'/');
+	if( needle == NULL){
+		return NULL;
+	}	else {
+		// We can ignore the '/' character
+		needle++;
+	}
 
 	while (*needle != ' ' && *needle != '\r'){
 		needle++;

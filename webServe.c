@@ -9,6 +9,7 @@
 #include <dirent.h>
 #include <string.h>
 #include <signal.h>
+#include <time.h>
 
 #include "pageGen.h"
 
@@ -45,10 +46,24 @@ void handle(int sockid) {
 	int currLength = 0;
 	char currChar = 0;
 	char prevChar = 0;
+	time_t start = time(0);
 
 	// Get the request Store it in buff
 	while (currLength < maxRequestLength && recv(sockid, &currChar, 1,0) > 0){
-		if (currChar == '\r' && prevChar == '\n') {
+		// prevent any lorises
+		// Or close requests after a connection was dropped
+		if (difftime( time(0), start ) >= 15.0){
+			sendHeader(sockid, "408 Request Timeout","text/html");
+			genErrorPage(sockid, "408 Request Timeout");
+		}
+
+
+		if (currLength >= maxRequestLength){
+			// Check for buffer overflow before writing
+			sendHeader(sockid, "413 Payload Too Large", "text/html");
+			genErrorPage(sockid, "413 Payload Too Large");
+			return;
+		} else if (currChar == '\r' && prevChar == '\n') {
 			// Finish The message
 			buff[currLength] = '\r';
 			buff[++currLength] = '\n';
@@ -59,13 +74,6 @@ void handle(int sockid) {
 		prevChar = currChar;
 	}
 
-	if (currLength >= maxRequestLength){
-		sendHeader(sockid, "413 Payload Too Large", "text/html");
-		genErrorPage(sockid, "413 Payload Too Large");
-		return;
-	}
-
-	// TODO Process request
 	// A wise man once said "We only support GET"
 	if (!strncmp(buff, "GET", 3) == 0){
 		// The request looks weird aka its not a get request
@@ -75,7 +83,16 @@ void handle(int sockid) {
 	}
 
 	// Check if the file exists
+	// TODO: Add Error 418
 	char* requestPath = getRequestedFileName(buff);
+	if (requestPath == NULL) {
+		// Malformed request
+		sendHeader(sockid, "400 Bad Request", "text/html");
+		genErrorPage(sockid, "400 Bad Request");
+		return;
+	}
+
+
 	if ( access(requestPath, F_OK) != -1) {
 		// If it does return the thing
 		sendHeader(sockid, "200 OK", "text/html");
@@ -130,7 +147,7 @@ int main (){
 			errormsg("I object!", status, 0);
 		}
 
-		handle( newSoc ); 
+		handle( newSoc); 
 		shutdown(newSoc, 2);
 	}
 	status = close(sockid);
