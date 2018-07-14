@@ -74,6 +74,12 @@ void handle(int sockid) {
 		prevChar = currChar;
 	}
 
+	if (!supportHTTPVersion(buff)){
+		sendHeader(sockid, "505 HTTP Version Not Supported", "text/html");
+		genErrorPage(sockid, "505 HTTP Version Not Supported");
+		return;
+	}
+
 	// A wise man once said "We only support GET"
 	if (!strncmp(buff, "GET", 3) == 0){
 		// The request looks weird aka its not a get request

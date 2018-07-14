@@ -104,9 +104,32 @@ char* getRequestedFileName(char* full){
 		needle = (char*) malloc(numChars + 6);
 		strcpy(needle, "./root");
 		strncat(needle, strchr(full, '/'), numChars +1 );
-		//return strndup(strchr(full,'/')+1, numChars-1);
 		return needle;
 	}
+}
+
+int supportHTTPVersion(char* full){
+	int numChars = 0;
+	char* needle = strstr(full, "HTTP/1.");
+	if( needle == NULL){
+		return -1;
+	} else if (*(needle + 8) != '1' || *(needle + 8) != '0' ){
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+void teaTime( int sockid){
+	wsockid("<html>\r\n<head>\r\n<title>");
+	wsockid("418 I'm a teapot.");
+	wsockid("</title>\r\n</head>\r\n<body>\r\n<h1>\r\n");
+	wsockid("418 I'm a teapot.");
+	wsockid("</h1>\r\n<hr>\r\n<p>MikeServe version ");
+	wsockid(VERSION);
+	wsockid("</p><p>The server hosting the webpage you requested is currently being used a teapot.</p>");
+	wsockid("</p>\r\n</body></html>\r\n");
+	return;
 }
 
 #endif
