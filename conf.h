@@ -8,10 +8,19 @@ char* ROOT;
 char* CONF;
 int SAVE;
 
+void freeGlobals(){
+	free(ROOT);
+	free(LOGFILE);
+	free(CONF);
+}
+
+
 void getConfOptions(){
 	printf("-h:\tReturns a list of commands\n");
 	printf("-l <filename>:\tSpecify a log file\n");
 	printf("-c <filename>:\tSpecify a config file\n");
+	printf("-s:\tSave configuartion options / Generate a mikeServe.conf file\n");
+	freeGlobals();
 	exit(0);
 }
 
@@ -42,9 +51,22 @@ void readConfFile(){
 		// This will exit the program
 	}
 
-	fscanf(fille, "%d\n", &PORT);
-	fscanf(fille, "%s\n", ROOT);
-	fscanf(fille, "%s\n", LOGFILE);
+	char buff[50];
+	int buffInt;
+
+	if (fscanf(fille, "%d\n", &buffInt) > 0){
+		PORT = buffInt;
+	}
+	if (	fscanf(fille, "%s\n", buff) > 0 ){
+		free(ROOT);
+		ROOT = strdup(buff);
+	}
+	if (	fscanf(fille, "%s\n", buff) > 0 ){
+		free(LOGFILE);
+		LOGFILE = strdup(buff);
+	}
+
+	fclose(fille);
 }
 
 void writeConfFile(){
@@ -57,6 +79,8 @@ void writeConfFile(){
 	fprintf(fille, "%d\n", PORT);
 	fprintf(fille, "%s\n", ROOT);
 	fprintf(fille, "%s\n", LOGFILE);
+
+	fclose(fille);
 	return;
 }
 

@@ -36,6 +36,7 @@ void sigintHandler(int sig_num) {
 	write( 0 , "\nServer Shutting Down . . .\n", 28 );
 
 	// Lets also unallocate some globals
+	freeGlobals();
 	exit(1);
 }
 
@@ -88,7 +89,6 @@ void handle(int sockid) {
 	}
 
 	// Check if the file exists
-	// TODO: Add Error 418
 	char* requestPath = getRequestedFileName(buff);
 	logRequest(requestPath);
 	if (requestPath == NULL) {
@@ -120,9 +120,9 @@ int main (int argc, char** argv){
 
 	// Set initial values if none specified in either config file or command line
 	PORT = 8080;
-	LOGFILE = "mikeServe.log";
-	ROOT = "root";
-	CONF = "mikeServe.conf";
+	LOGFILE = strdup("mikeServe.log");
+	ROOT = strdup("root");
+	CONF = strdup("mikeServe.conf");
 	SAVE = 0;
 
 	// Configuration
