@@ -13,6 +13,7 @@
 
 #include "pageGen.h"
 #include "log.h"
+#include "conf.h"
 
 //#define PORT 8080
 //#define ROOT "root"
@@ -27,17 +28,14 @@
 	This program was written in vim not emacs.
 */
 
-// Lets declare some global pointers
-// This will eventually help phase out the constants above
-int PORT;
-char* ROOT;
-char* CONF;
 
 void sigintHandler(int sig_num) {
 	signal(SIGINT, sigintHandler);
 	// Using write because its Async safe
 	// Even though this will exit, its just better this way
 	write( 0 , "\nServer Shutting Down . . .\n", 28 );
+
+	// Lets also unallocate some globals
 	exit(1);
 }
 
@@ -125,21 +123,14 @@ int main (int argc, char** argv){
 	LOGFILE = "mikeServe.log";
 	ROOT = "root";
 	CONF = "mikeServe.conf";
+	SAVE = 0;
 
-	// Read command line configuration options
-	int conf;
-	while ((conf = getopt(argc, argv, "hl:c:")) != -1 ){
-		switch (conf){
-			case 'h':
-				getConfOptions();
-				break;
-			case 'l':
-				LOGFILE = strdup(optarg);
-				break;
-			case 'c':
-				CONF = strdup(optarg);
-				break;
-		}
+	// Configuration
+	readConfFile();
+	readTermConf(argc, argv);
+
+	if (SAVE){
+		writeConfFile();
 	}
 
 	// Set up the sigint handler as to ensure the socket is closed

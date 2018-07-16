@@ -58,9 +58,4 @@ void logError(char* msg){
 	return;
 }
 
-void getConfOptions(){
-	printf("-h:\tReturns a list of commands\n");
-	printf("-l <filename>:\tSpecify a log file\n");
-	printf("-c <filename>:\tSpecify a config file\n");
-}
 #endif
