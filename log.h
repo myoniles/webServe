@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define LOGFILE "mikeServe.log"
+char* LOGFILE;
 
 char* getDate(){
 	time_t rawtime;
@@ -56,5 +56,11 @@ void logError(char* msg){
 	free(time);
 	fclose(fille);
 	return;
+}
+
+void getConfOptions(){
+	printf("-h:\tReturns a list of commands\n");
+	printf("-l <filename>:\tSpecify a log file\n");
+	printf("-c <filename>:\tSpecify a config file\n");
 }
 #endif

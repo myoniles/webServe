@@ -14,8 +14,6 @@
 
 #include "log.h"
 
-#define PORT 8080
-#define ROOT "root"
 #define PROT "HTTP/1.0"
 #define VERSION "0.1.0"
 

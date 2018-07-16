@@ -14,18 +14,24 @@
 #include "pageGen.h"
 #include "log.h"
 
-#define PORT 8080
-#define ROOT "root"
+//#define PORT 8080
+//#define ROOT "root"
 #define PROT "HTTP/1.0"
 #define VERSION "0.1.0"
-#define LOGFILE "mikeServe.log"
+//#define LOGFILE "mikeServe.log"
 
 /*
 	If by chance you are Thomas, looking for a
- 	way to break this, best of luck!
+	way to break this, best of luck!
 
 	This program was written in vim not emacs.
 */
+
+// Lets declare some global pointers
+// This will eventually help phase out the constants above
+int PORT;
+char* ROOT;
+char* CONF;
 
 void sigintHandler(int sig_num) {
 	signal(SIGINT, sigintHandler);
@@ -107,18 +113,40 @@ void handle(int sockid) {
 	free(requestPath);
 }
 
-int main (){
+int main (int argc, char** argv){
 	int opt = 1;
 	struct sockaddr_in address;
 	int addrlen = sizeof(address);
 	int sockid;
 	int status;
 
+	// Set initial values if none specified in either config file or command line
+	PORT = 8080;
+	LOGFILE = "mikeServe.log";
+	ROOT = "root";
+	CONF = "mikeServe.conf";
+
+	// Read command line configuration options
+	int conf;
+	while ((conf = getopt(argc, argv, "hl:c:")) != -1 ){
+		switch (conf){
+			case 'h':
+				getConfOptions();
+				break;
+			case 'l':
+				LOGFILE = strdup(optarg);
+				break;
+			case 'c':
+				CONF = strdup(optarg);
+				break;
+		}
+	}
+
 	// Set up the sigint handler as to ensure the socket is closed
 	signal(SIGINT, sigintHandler);
 
 	// Create the socket
- 	if ( (sockid = socket(AF_INET, SOCK_STREAM,0))  == 0) {
+	if ( (sockid = socket(AF_INET, SOCK_STREAM,0))  == 0) {
 		errormsg("Socket failure", sockid, 1);
 		int status = close(sockid);
 	}
@@ -142,14 +170,13 @@ int main (){
 		if ((status=listen(sockid, 3) < 0 )){
 			errormsg("I couldn't hear you if I wanted to...", status, 1);
 		}
-		
 		int newSoc;
 		// Accept incoming requests
 		if ( (newSoc=accept(sockid, (struct sockaddr*)&address,(socklen_t*)&addrlen )) < 0) {
 			errormsg("I object!", status, 0);
 		}
 
-		handle( newSoc); 
+		handle( newSoc);
 		shutdown(newSoc, 2);
 	}
 	status = close(sockid);
