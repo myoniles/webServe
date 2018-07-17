@@ -125,6 +125,7 @@ int main (int argc, char** argv){
 	CONF = strdup("mikeServe.conf");
 	LAND = strdup("index.html");
 	SAVE = 0;
+	DAEMON = 0;
 
 	// Configuration
 	readConfFile();
@@ -155,6 +156,10 @@ int main (int argc, char** argv){
 	if ( (status=bind(sockid, (struct sockaddr*)&address, sizeof(address))) < 0) {
 		errormsg("could not bind", status, 1);
 		int status = close(sockid);
+	}
+
+	if(DAEMON){
+		daemon(1,0);
 	}
 
 	while ( 1 ){

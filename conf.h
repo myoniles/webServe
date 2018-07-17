@@ -4,6 +4,7 @@
 // Lets declare some global pointers
 // This will eventually help phase out the constants above
 int PORT;
+int DAEMON;
 char* CONF;
 char* LAND;
 int SAVE;
@@ -19,6 +20,7 @@ void freeGlobals(){
 void getConfOptions(){
 	printf("-h:\tReturns a list of commands\n");
 	printf("-s:\tSave configuartion options / Generate a mikeServe.conf file\n");
+	printf("-d:\tRun this as a daemon\n");
 	printf("-l <filename>:\tSpecify a log file\n");
 	printf("-c <filename>:\tSpecify a config file\n");
 	printf("-i <filename>:\tSpecify a landing page\n");
@@ -28,7 +30,7 @@ void getConfOptions(){
 
 void readTermConf(int argc, char** argv){
 	int conf;
-	while ((conf = getopt(argc, argv, "hsc:l:i:")) != -1 ){
+	while ((conf = getopt(argc, argv, "dhsc:l:i:")) != -1 ){
 		switch (conf){
 			case 'h':
 				getConfOptions();
@@ -46,6 +48,9 @@ void readTermConf(int argc, char** argv){
 				LAND = strdup(optarg);
 			case 's':
 				SAVE = 1;
+				break;
+			case 'd':
+				DAEMON = 1;
 				break;
 		}
 	}
