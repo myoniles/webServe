@@ -19,6 +19,9 @@
 
 #define wsockid(str) if (send(sockid, str, strlen(str), 0) != strlen(str)) exit(1);
 
+char* ROOT;
+char* LAND;
+
 void sendHeader(int sockid, char* status, char* contentType){
 	// hard coding is like sausage; its a grind and you might
 	// not want to have any if you knew how it was made.
@@ -89,14 +92,17 @@ char* getRequestedFileName(char* full){
 
 	// requesting the landing page
 	if ( numChars == 0){
-		return strdup("./root/index.html");
+		needle = (char*) malloc(strlen(ROOT) + strlen(LAND));
+		strcpy(needle, ROOT);
+		strcat(needle, "/");
+		strcat(needle, LAND);
 	} else {
 		// 1 is added to offset the '/'
-		needle = (char*) malloc(numChars + 6);
-		strcpy(needle, "./root");
+		needle = (char*) malloc(numChars + strlen(ROOT));
+		strcpy(needle, ROOT);
 		strncat(needle, strchr(full, '/'), numChars +1 );
-		return needle;
 	}
+	return needle;
 }
 
 int supportHTTPVersion(char* full){

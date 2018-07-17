@@ -123,6 +123,7 @@ int main (int argc, char** argv){
 	LOGFILE = strdup("mikeServe.log");
 	ROOT = strdup("root");
 	CONF = strdup("mikeServe.conf");
+	LAND = strdup("index.html");
 	SAVE = 0;
 
 	// Configuration
