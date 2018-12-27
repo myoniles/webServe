@@ -6,10 +6,10 @@ OBJECTS=$(patsubst %.c, %.o, $(SOURCES))
 all: ./bin/webServe clean
 
 ./bin/webServe: webServe.o
-	$(CC) -o ./bin/webServe webServe.o
+	$(CC) $(CFLAGS) -o ./bin/webServe webServe.o
 
 webServe.o: ./src/webServe.c ./src/*.h
-	$(CC) -c ./src/webServe.c
+	$(CC) $(CFLAGS) -c ./src/webServe.c
 
 clean:
 	-rm webServe.o

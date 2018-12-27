@@ -106,7 +106,6 @@ char* getRequestedFileName(char* full){
 }
 
 int supportHTTPVersion(char* full){
-	int numChars = 0;
 	char* needle = strstr(full, "HTTP/1.");
 	if( needle == NULL){
 		return -1;
@@ -115,6 +114,24 @@ int supportHTTPVersion(char* full){
 	} else {
 		return 0;
 	}
+}
+
+char* getContentType(char* full){
+	char* needle = strstr(full, "Accept:");
+	if( needle == NULL){
+		return NULL;
+	} else {
+		needle += 8;
+	}
+	int numChars = 0;
+
+	while (*needle != '\r' && *needle != ',' ){
+		needle++;
+		numChars++;
+	}
+
+	needle = strndup(strstr(full, "Accept:") +8, numChars);
+	return needle;
 }
 
 void teaTime( int sockid){

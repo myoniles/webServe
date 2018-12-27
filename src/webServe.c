@@ -101,8 +101,15 @@ void handle(int sockid) {
 
 	if ( access(requestPath, F_OK) != -1) {
 		// If it does return the thing
-		sendHeader(sockid, "200 OK", "text/html");
-		fileDump(sockid, requestPath);
+		char *contType = getContentType(buff);
+		if (contType == NULL){
+			sendHeader(sockid, "400 Bad Request", "text/html");
+			genErrorPage(sockid, "400 Bad Request");
+		} else {
+			sendHeader(sockid, "200 OK", contType);
+			fileDump(sockid, requestPath);
+			free(contType);
+		}
 	} else {
 		// If not, don't do the thing
 		sendHeader(sockid, "404 Not Found", "text/html");
