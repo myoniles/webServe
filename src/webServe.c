@@ -10,6 +10,7 @@
 #include <string.h>
 #include <signal.h>
 #include <time.h>
+#include <pthread.h>
 
 #include "pageGen.h"
 #include "log.h"
@@ -20,6 +21,8 @@
 #define PROT "HTTP/1.0"
 #define VERSION "0.1.0"
 //#define LOGFILE "mikeServe.log"
+
+// Declare global locks
 
 /*
 	If by chance you are Thomas, looking for a
@@ -33,14 +36,17 @@ void sigintHandler(int sig_num) {
 	signal(SIGINT, sigintHandler);
 	// Using write because its Async safe
 	// Even though this will exit, its just better this way
-	write( 0 , "\nServer Shutting Down . . .\n", 28 );
+	char* errmsg = "\nSever Shutting Down . . .\n";
+	write( 1 , errmsg, strlen(errmsg) );
 
 	// Lets also unallocate some globals
 	freeGlobals();
 	exit(1);
 }
 
-void handle(int sockid) {
+void handle(void *sockidptr) {
+	// dereference sockidptr
+	int sockid = *((int*)(sockidptr));
 	int maxRequestLength = 2048;
 	char buff[maxRequestLength + 1];
 	int currLength = 0;
@@ -133,6 +139,7 @@ int main (int argc, char** argv){
 	LAND = strdup("index.html");
 	SAVE = 0;
 	DAEMON = 0;
+	SERVE_TYPE = 'c';
 
 	// Configuration
 	readConfFile();
@@ -180,8 +187,32 @@ int main (int argc, char** argv){
 			errormsg("I object!", status, 0);
 		}
 
-		handle( newSoc);
-		shutdown(newSoc, 2);
+
+		int fid;
+		pthread_t newThr;
+		switch (SERVE_TYPE){
+			case 'd':
+				handle( (void*)(&newSoc));
+				break;
+			case 'f':
+				fid = fork();
+				if ( fid == 0){
+					//child
+					handle((void*)(&newSoc));
+					shutdown(newSoc, SHUT_RDWR);
+				}
+				break;
+			case 't':
+				pthread_create(&newThr, NULL, (void*)handle , (void*)(&newSoc) );
+				pthread_join(newThr, NULL);
+				break;
+			case 'p':
+				// TODO
+				break;
+			default:
+				handle((void*) (&newSoc));
+		}
+		shutdown(newSoc, SHUT_RDWR);
 	}
 	status = close(sockid);
 }

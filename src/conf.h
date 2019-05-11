@@ -8,6 +8,7 @@ int DAEMON;
 char* CONF;
 char* LAND;
 int SAVE;
+char SERVE_TYPE;
 
 void freeGlobals(){
 	free(ROOT);
