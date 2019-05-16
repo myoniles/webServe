@@ -19,19 +19,23 @@ void freeGlobals(){
 
 
 void getConfOptions(){
+	printf("-d:\tRun this as a daemon\n");
+	printf("-f:\tFork a process to handle each request\n");
 	printf("-h:\tReturns a list of commands\n");
 	printf("-s:\tSave configuartion options / Generate a mikeServe.conf file\n");
-	printf("-d:\tRun this as a daemon\n");
-	printf("-l <filename>:\tSpecify a log file\n");
+	printf("-t:\tcreate a thread to handle each request\n");
+	// TODO
+	//printf("-p <number of threads>:\tcall on a pool of threads of size <n> to handle each request\n");
 	printf("-c <filename>:\tSpecify a config file\n");
 	printf("-i <filename>:\tSpecify a landing page\n");
+	printf("-l <filename>:\tSpecify a log file\n");
 	freeGlobals();
 	exit(0);
 }
 
 void readTermConf(int argc, char** argv){
 	int conf;
-	while ((conf = getopt(argc, argv, "dhsc:l:i:")) != -1 ){
+	while ((conf = getopt(argc, argv, "dhsftc:l:i:")) != -1 ){
 		switch (conf){
 			case 'h':
 				getConfOptions();
@@ -53,6 +57,12 @@ void readTermConf(int argc, char** argv){
 			case 'd':
 				DAEMON = 1;
 				break;
+			case 'f':
+				SERVE_TYPE = 'f';
+				break;
+			case 't':
+				SERVE_TYPE = 't';
+				break;
 		}
 	}
 }
@@ -60,7 +70,7 @@ void readTermConf(int argc, char** argv){
 void readConfFile(){
 	FILE* fille = fopen(CONF, "r");
 	if(fille == NULL){
-		errormsg("mikeServe.conf not found. Please specify a config file using the \n", 1, 1);
+		errormsg("mikeServe.conf not found. Please specify a config file\n", 1, 1);
 		// This will exit the program
 	}
 

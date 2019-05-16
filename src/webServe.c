@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
@@ -33,16 +34,22 @@
 
 
 void sigintHandler(int sig_num) {
-	signal(SIGINT, sigintHandler);
-	// Using write because its Async safe
-	// Even though this will exit, its just better this way
-	char* errmsg = "\nSever Shutting Down . . .\n";
-	write( 1 , errmsg, strlen(errmsg) );
+	if (sig_num == SIGINT ){
+		signal(SIGINT, sigintHandler);
+		// Using write because its Async safe
+		// Even though this will exit, its just better this way
+		char* errmsg = "\nSever Shutting Down . . .\n";
+		write( 1 , errmsg, strlen(errmsg) );
 
-	// Lets also unallocate some globals
-	freeGlobals();
-	exit(1);
+		// Lets also unallocate some globals
+		freeGlobals();
+		exit(1);
+	} else if (sig_num == SIGCHLD ){
+		// Just waiting for my children to PERISH
+		waitpid(0, NULL, WNOHANG);
+	}
 }
+
 
 void handle(void *sockidptr) {
 	// dereference sockidptr
@@ -151,6 +158,7 @@ int main (int argc, char** argv){
 
 	// Set up the sigint handler as to ensure the socket is closed
 	signal(SIGINT, sigintHandler);
+	signal(SIGCHLD, sigintHandler);
 
 	// Create the socket
 	if ( (sockid = socket(AF_INET, SOCK_STREAM,0))  == 0) {
@@ -200,6 +208,9 @@ int main (int argc, char** argv){
 					//child
 					handle((void*)(&newSoc));
 					shutdown(newSoc, SHUT_RDWR);
+					exit(0);
+				} else {
+					close(newSoc);
 				}
 				break;
 			case 't':
