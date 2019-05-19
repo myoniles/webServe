@@ -65,9 +65,9 @@ int fileDump (int sockid, char* filename){
 	}
 
 	char c;
-	// This does not use the macro wsockid because 
+	// This does not use the macro wsockid because
 	// strlen behaves strangely with single chars
-	while ( (c=fgetc(fille)) != EOF) {	
+	while ( (c=fgetc(fille)) != EOF) {
 		send(sockid, &c, 1, 0);
 	}
 

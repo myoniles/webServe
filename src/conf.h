@@ -73,24 +73,29 @@ void readConfFile(){
 		errormsg("mikeServe.conf not found. Please specify a config file\n", 1, 1);
 		// This will exit the program
 	}
+	int MAXLINE = 50;
 
-	char buff[50];
-	int buffInt;
+	char linebuff[MAXLINE];
+	char ansbuff[MAXLINE];
+	int intbuff;
 
-	if (fscanf(fille, "%d\n", &buffInt) > 0){
-		PORT = buffInt;
-	}
-	if (	fscanf(fille, "%s\n", buff) > 0 ){
-		free(ROOT);
-		ROOT = strdup(buff);
-	}
-	if (	fscanf(fille, "%s\n", buff) > 0 ){
-		free(LOGFILE);
-		LOGFILE = strdup(buff);
-	}
-	if (	fscanf(fille, "%s\n", buff) > 0 ){
-		free(LAND);
-		LAND = strdup(buff);
+	while(!feof(fille)){
+		fgets(linebuff, MAXLINE, fille);
+		if (sscanf( linebuff, "PORT: %d\n", &intbuff) > 0){
+			PORT = intbuff;
+		}
+		if (sscanf( linebuff, "ROOT: %s\n", ansbuff) > 0){
+			free(ROOT);
+			ROOT = strdup(ansbuff);
+		}
+		if (sscanf( linebuff, "LOG FILE: %s\n", ansbuff) > 0){
+			free(LOGFILE);
+			LOGFILE = strdup(ansbuff);
+		}
+		if (sscanf( linebuff, "LANDING PAGE: %s\n", ansbuff) > 0){
+			free(LAND);
+			LAND = strdup(ansbuff);
+		}
 	}
 
 	fclose(fille);
@@ -103,10 +108,10 @@ void writeConfFile(){
 		errormsg("Cannot create new conf file. Your options will not be saved!\n", 0, 0);
 		return;
 	}
-	fprintf(fille, "%d\n", PORT);
-	fprintf(fille, "%s\n", ROOT);
-	fprintf(fille, "%s\n", LOGFILE);
-	fprintf(fille, "%s\n", LAND);
+	fprintf(fille, "PORT: %d\n", PORT);
+	fprintf(fille, "ROOT: %s\n", ROOT);
+	fprintf(fille, "LOG FILE: %s\n", LOGFILE);
+	fprintf(fille, "LANDING PAGE: %s\n", LAND);
 
 	fclose(fille);
 	return;
