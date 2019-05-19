@@ -2,4 +2,8 @@ webServe
 mikeServe.log
 mikeServe.conf
 
+todo.md
+
 *.jpg
+*.png
+*.gif
