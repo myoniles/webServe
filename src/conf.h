@@ -9,6 +9,7 @@ char* CONF;
 char* LAND;
 int SAVE;
 char SERVE_TYPE;
+int DEBUG;
 
 void freeGlobals(){
 	free(ROOT);
@@ -35,7 +36,7 @@ void getConfOptions(){
 
 void readTermConf(int argc, char** argv){
 	int conf;
-	while ((conf = getopt(argc, argv, "dhsftc:l:i:")) != -1 ){
+	while ((conf = getopt(argc, argv, "dghsftc:l:i:")) != -1 ){
 		switch (conf){
 			case 'h':
 				getConfOptions();
@@ -56,6 +57,9 @@ void readTermConf(int argc, char** argv){
 				break;
 			case 'd':
 				DAEMON = 1;
+				break;
+			case 'g':
+				DEBUG = 1;
 				break;
 			case 'f':
 				SERVE_TYPE = 'f';

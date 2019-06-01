@@ -66,14 +66,14 @@ void handle(void *sockidptr) {
 		// prevent any lorises
 		// Or close requests after a connection was dropped
 		if (difftime( time(0), start ) >= 15.0){
-			sendHeader(sockid, "408 Request Timeout","text/html");
+			sendHeader(sockid, "408 Request Timeout","text/html", -1);
 			genErrorPage(sockid, "408 Request Timeout");
 		}
 
 
 		if (currLength >= maxRequestLength){
 			// Check for buffer overflow before writing
-			sendHeader(sockid, "413 Payload Too Large", "text/html");
+			sendHeader(sockid, "413 Payload Too Large", "text/html", -1);
 			genErrorPage(sockid, "413 Payload Too Large");
 			return;
 		} else if (currChar == '\r' && prevChar == '\n') {
@@ -88,7 +88,7 @@ void handle(void *sockidptr) {
 	}
 
 	if (!supportHTTPVersion(buff)){
-		sendHeader(sockid, "505 HTTP Version Not Supported", "text/html");
+		sendHeader(sockid, "505 HTTP Version Not Supported", "text/html", -1);
 		genErrorPage(sockid, "505 HTTP Version Not Supported");
 		return;
 	}
@@ -96,7 +96,7 @@ void handle(void *sockidptr) {
 	// A wise man once said "We only support GET"
 	if (!strncmp(buff, "GET", 3) == 0){
 		// The request looks weird aka its not a get request
-		sendHeader(sockid, "405 Method Not Allowed", "text/html" );
+		sendHeader(sockid, "405 Method Not Allowed", "text/html" , -1);
 		genErrorPage (sockid, "405 Method Not Allowed");
 		return;
 	}
@@ -106,7 +106,7 @@ void handle(void *sockidptr) {
 	logRequest(requestPath);
 	if (requestPath == NULL) {
 		// Malformed request
-		sendHeader(sockid, "400 Bad Request", "text/html");
+		sendHeader(sockid, "400 Bad Request", "text/html", -1);
 		genErrorPage(sockid, "400 Bad Request");
 		return;
 	}
@@ -116,16 +116,17 @@ void handle(void *sockidptr) {
 		// If it does return the thing
 		char *contType = getContentType(buff);
 		if (contType == NULL){
-			sendHeader(sockid, "400 Bad Request", "text/html");
+			sendHeader(sockid, "400 Bad Request", "text/html", -1);
 			genErrorPage(sockid, "400 Bad Request");
 		} else {
-			sendHeader(sockid, "200 OK", contType);
+			int filleSize = getFileSize(requestPath);
+			sendHeader(sockid, "200 OK", contType, filleSize);
 			fileDump(sockid, requestPath);
 			free(contType);
 		}
 	} else {
 		// If not, don't do the thing
-		sendHeader(sockid, "404 Not Found", "text/html");
+		sendHeader(sockid, "404 Not Found", "text/html", -1);
 		genErrorPage(sockid, "404 Page Not Found");
 	}
 	free(requestPath);
@@ -146,6 +147,7 @@ int main (int argc, char** argv){
 	LAND = strdup("index.html");
 	SAVE = 0;
 	DAEMON = 0;
+	DEBUG = 0;
 	SERVE_TYPE = 'c';
 
 	// Configuration
